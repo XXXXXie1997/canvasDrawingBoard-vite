@@ -27,7 +27,7 @@
 import type { IAnyObject } from "@/interface/IAnyObject";
 import type { ITool } from "@/interface/ITool";
 import { ElTooltip } from "element-plus";
-import { defineEmits, ref, defineProps } from "vue";
+import { ref } from "vue";
 const props = defineProps({
   modelValue: {
     type: Boolean,

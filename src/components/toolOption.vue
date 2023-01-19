@@ -39,7 +39,7 @@
 <script lang="ts" setup>
 import type { IAnyObject } from "@/interface/IAnyObject";
 import { ElInputNumber, ElColorPicker } from "element-plus";
-import { defineEmits, ref, defineProps } from "vue";
+import { ref } from "vue";
 
 const props = defineProps({
   modelValue: {
