@@ -73,7 +73,7 @@ const defaultBoardColor = "#fff";
 const canvas = ref();
 // 画布包裹器ref
 const canvasWrapper = ref();
-const context = ref<CanvasRenderingContext2D>({});
+const context = ref<CanvasRenderingContext2D | IAnyObject>({});
 // 工具配置栏显示状态
 const showOption = ref<boolean>(false);
 // 工具栏显示状态
