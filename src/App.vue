@@ -96,8 +96,10 @@ const saveHistory = () => {
 const computedOptions = computed(() => {
   return {
     lineWidth: options.value.lineWidth,
-    fillStyle: options.value.color,
-    strokeStyle: options.value.color,
+    fillStyle:
+      currentTool.value.key === "eraser" ? "#fff" : options.value.color,
+    strokeStyle:
+      currentTool.value.key === "eraser" ? "#fff" : options.value.color,
   };
 });
 // 当前激活工具
