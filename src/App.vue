@@ -68,6 +68,8 @@ import { ArrowLeftBold, ArrowRightBold } from "@element-plus/icons-vue";
 import { ElButton, ElButtonGroup } from "element-plus";
 import { tools } from "./help/app.help";
 import type { ITool } from "@/interface/ITool";
+import { onKeyStroke } from "@vueuse/core";
+
 const defaultBoardColor = "#fff";
 // 画布ref
 const canvas = ref();
@@ -85,6 +87,25 @@ const lastPoint = ref<{ x: number; y: number }>({ x: 0, y: 0 });
 // canvas历史记录数组和当前步骤数，每画一笔都会记录，用于撤销前进功能
 let canvasHistory: string[] = [];
 const step = ref(0);
+onKeyStroke(["Ctrl", "Z", "z"], (e) => {
+  if (e.ctrlKey && (e.key === "z" || e.key === "Z")) {
+    e.preventDefault();
+    undo();
+  }
+});
+onKeyStroke(["Ctrl", "Y", "y"], (e) => {
+  if (e.ctrlKey && (e.key === "y" || e.key === "Y")) {
+    e.preventDefault();
+    redo();
+  }
+});
+onKeyStroke(["Ctrl", "S", "s"], (e) => {
+  if (e.ctrlKey && (e.key === "s" || e.key === "S")) {
+    e.preventDefault();
+    savePicture();
+  }
+});
+
 // 保存历史记录方法
 const saveHistory = () => {
   step.value++;
@@ -158,8 +179,7 @@ const redo = () => {
 };
 // 初始化画布
 const init = () => {
-  canvas.value.width = canvasWrapper.value.clientWidth;
-  canvas.value.height = canvasWrapper.value.clientHeight;
+  setSize();
   context.value = canvas.value.getContext("2d");
   context.value.fillStyle = defaultBoardColor;
   context.value.fillRect(0, 0, canvas.value.width, canvas.value.height);
@@ -177,7 +197,6 @@ const cleanBoard = () => {
   // 将清空的画板保存为历史，否则无法撤回清空之前的一步
   saveHistory();
 };
-// 初始化鼠标事件，目前只支持画线
 const setTool = (toolKey: string) => {
   if (toolKey === "eraser") {
     context.value.fillStyle = defaultBoardColor;
@@ -223,11 +242,20 @@ watch(
     }
   }
 );
+const setSize = () => {
+  canvas.value.width = canvasWrapper.value.clientWidth;
+  canvas.value.height = canvasWrapper.value.clientHeight;
+};
+
 onMounted(() => {
   init();
   setTool(currentTool.value.key);
   // 储存一张空白画布作为历史记录的第一张，否则画板无法撤回至完全空白
   canvasHistory.push(canvas.value.toDataURL());
+  // 监听窗口变化
+  window.addEventListener("resize", () => {
+    setSize();
+  });
 });
 </script>
 <style lang="less">
