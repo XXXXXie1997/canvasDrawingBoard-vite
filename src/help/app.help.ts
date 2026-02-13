@@ -38,7 +38,26 @@ const draw = (
   drawLine(context, x1, y1, x2, y2);
 };
 
+// 绘制矩形
+const drawRectangle = (
+  context: CanvasRenderingContext2D,
+  x1: number,
+  y1: number,
+  x2: number,
+  y2: number,
+  fillMode: string = "fill"
+) => {
+  context.beginPath();
+  if (fillMode === "fill") {
+    context.fillRect(x1, y1, x2 - x1, y2 - y1);
+  } else {
+    context.strokeRect(x1, y1, x2 - x1, y2 - y1);
+  }
+  context.closePath();
+};
+
 export const tools: IAnyObject = {
   pencil: draw,
   eraser: draw,
+  rectangle: drawRectangle,
 };

@@ -28,6 +28,17 @@
           color-format="hex"
           @change="updateOption"
         />
+        <!-- 矩形工具显示填充模式选择 -->
+        <ElSelect
+          v-if="props.currentTool.key === 'rectangle'"
+          v-model="option.fillMode"
+          size="small"
+          @change="updateOption"
+          style="margin-left: 8px; width: 80px"
+        >
+          <ElOption label="实心" value="fill" />
+          <ElOption label="线框" value="stroke" />
+        </ElSelect>
       </div>
     </div>
     <div class="tip" style="width: 42px; height: 40px">
@@ -38,7 +49,7 @@
 
 <script lang="ts" setup>
 import type { IAnyObject } from "@/interface/IAnyObject";
-import { ElInputNumber, ElColorPicker } from "element-plus";
+import { ElInputNumber, ElColorPicker, ElSelect, ElOption } from "element-plus";
 import { ref } from "vue";
 
 const props = defineProps({
@@ -61,6 +72,7 @@ const emit = defineEmits(["on-option-change", "update:modelValue"]);
 const option = ref<IAnyObject>({
   lineWidth: 2,
   color: "#000000",
+  fillMode: "fill",
 });
 const showState = ref<boolean>(false);
 const updateOption = () => {

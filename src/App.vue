@@ -209,20 +209,41 @@ const setTool = (toolKey: string) => {
     if (e.button !== 0) return;
     painting.value = true;
     lastPoint.value = { x: e.clientX, y: e.clientY };
+    // 矩形工具需要保存当前画布状态用于预览
+    if (toolKey === "rectangle") {
+      cache.value.width = canvas.value.width;
+      cache.value.height = canvas.value.height;
+      cacheContext.value = cache.value.getContext("2d");
+      cacheContext.value?.drawImage(canvas.value, 0, 0);
+    }
   };
   canvas.value.onmousemove = (e: MouseEvent) => {
     if (e.button !== 0) return;
     if (painting.value === true) {
-      // 根据当前工具key设置鼠标移动事件
-      tools[toolKey](
-        canvas.value,
-        context.value,
-        lastPoint.value.x - 70,
-        lastPoint.value.y - 70,
-        e.clientX - 70,
-        e.clientY - 70
-      );
-      lastPoint.value = { x: e.clientX, y: e.clientY };
+      if (toolKey === "rectangle") {
+        // 矩形工具：使用缓存画布预览
+        context.value?.clearRect(0, 0, canvas.value.width, canvas.value.height);
+        context.value?.drawImage(cache.value, 0, 0);
+        tools[toolKey](
+          context.value,
+          lastPoint.value.x - 70,
+          lastPoint.value.y - 70,
+          e.clientX - 70,
+          e.clientY - 70,
+          options.value.fillMode || "fill"
+        );
+      } else {
+        // 其他工具：正常绘制
+        tools[toolKey](
+          canvas.value,
+          context.value,
+          lastPoint.value.x - 70,
+          lastPoint.value.y - 70,
+          e.clientX - 70,
+          e.clientY - 70
+        );
+        lastPoint.value = { x: e.clientX, y: e.clientY };
+      }
     }
   };
   canvas.value.onmouseup = (e: MouseEvent) => {
