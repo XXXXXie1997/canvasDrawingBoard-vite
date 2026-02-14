@@ -39,6 +39,7 @@ const emit = defineEmits(["on-tool-change", "update:modelValue"]);
 const toolList = ref<ITool[]>([
   { icon: "icon-pencil", key: "pencil", name: "铅笔", selected: true },
   { icon: "icon-clear-format", key: "eraser", name: "橡皮", selected: false },
+  { icon: "icon-rectangle", key: "rectangle", name: "矩形", selected: false },
 ]);
 // 计时器，主要用于组件展开收起操作优化
 let timer = 0;
