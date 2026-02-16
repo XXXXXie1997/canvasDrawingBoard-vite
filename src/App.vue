@@ -209,8 +209,8 @@ const setTool = (toolKey: string) => {
     if (e.button !== 0) return;
     painting.value = true;
     lastPoint.value = { x: e.clientX, y: e.clientY };
-    // 矩形工具需要保存当前画布状态用于预览
-    if (toolKey === "rectangle") {
+    // 形状工具需要保存当前画布状态用于预览
+    if (toolKey === "shapes") {
       cache.value.width = canvas.value.width;
       cache.value.height = canvas.value.height;
       cacheContext.value = cache.value.getContext("2d");
@@ -220,8 +220,8 @@ const setTool = (toolKey: string) => {
   canvas.value.onmousemove = (e: MouseEvent) => {
     if (e.button !== 0) return;
     if (painting.value === true) {
-      if (toolKey === "rectangle") {
-        // 矩形工具：使用缓存画布预览
+      if (toolKey === "shapes") {
+        // 形状工具：使用缓存画布预览
         context.value?.clearRect(0, 0, canvas.value.width, canvas.value.height);
         context.value?.drawImage(cache.value, 0, 0);
         tools[toolKey](
@@ -230,6 +230,7 @@ const setTool = (toolKey: string) => {
           lastPoint.value.y - 70,
           e.clientX - 70,
           e.clientY - 70,
+          options.value.shapeType || "rectangle",
           options.value.fillMode || "fill"
         );
       } else {

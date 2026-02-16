@@ -28,9 +28,23 @@
           color-format="hex"
           @change="updateOption"
         />
-        <!-- 矩形工具显示填充模式选择 -->
+        <!-- 形状工具显示形状类型选择 -->
         <ElSelect
-          v-if="props.currentTool.key === 'rectangle'"
+          v-if="props.currentTool.key === 'shapes'"
+          v-model="option.shapeType"
+          size="small"
+          @change="updateOption"
+          style="margin-left: 8px; width: 80px"
+        >
+          <ElOption label="矩形" value="rectangle" />
+          <ElOption label="圆形" value="circle" />
+          <ElOption label="椭圆" value="ellipse" />
+          <ElOption label="三角形" value="triangle" />
+          <ElOption label="菱形" value="diamond" />
+        </ElSelect>
+        <!-- 形状工具显示填充模式选择 -->
+        <ElSelect
+          v-if="props.currentTool.key === 'shapes'"
           v-model="option.fillMode"
           size="small"
           @change="updateOption"
@@ -73,6 +87,7 @@ const option = ref<IAnyObject>({
   lineWidth: 2,
   color: "#000000",
   fillMode: "fill",
+  shapeType: "rectangle",
 });
 const showState = ref<boolean>(false);
 const updateOption = () => {
