@@ -29,6 +29,7 @@ import type { ITool } from "@/interface/ITool";
 import { ElTooltip } from "element-plus";
 import { ref } from "vue";
 import IconLine from "./icons/IconLine.vue";
+import IconFill from "./icons/IconFill.vue";
 const props = defineProps({
   modelValue: {
     type: Boolean,
@@ -42,7 +43,7 @@ const toolList = ref<ITool[]>([
   { icon: "icon-clear-format", key: "eraser", name: "橡皮", selected: false },
   { icon: "icon-rectangle", key: "shapes", name: "形状", selected: false },
   { icon: IconLine, key: "line", name: "直线", selected: false },
-  { icon: "icon-paint-bucket", key: "fill", name: "填充", selected: false },
+  { icon: IconFill, key: "fill", name: "填充", selected: false },
 ]);
 // 计时器，主要用于组件展开收起操作优化
 let timer = 0;
