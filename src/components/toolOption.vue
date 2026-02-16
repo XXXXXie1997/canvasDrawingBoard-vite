@@ -6,53 +6,75 @@
   >
     <div class="tool">
       <div class="tool-item">
-        <div class="preview">
-          <div
-            class="point"
-            :style="`width:${option.lineWidth}px;height:${option.lineWidth}px;background:${option.color}`"
-          ></div>
-        </div>
-        <ElInputNumber
-          v-model="option.lineWidth"
-          size="small"
-          @change="updateOption"
-          style="margin-right: 8px; width: 80px"
-          controls-position="right"
-          :min="2"
-          :max="props.currentTool.key === 'eraser' ? 40 : 20"
-        />
-        <ElColorPicker
-          v-if="props.currentTool.key !== 'eraser'"
-          v-model="option.color"
-          size="small"
-          color-format="hex"
-          @change="updateOption"
-        />
-        <!-- 形状工具显示形状类型选择 -->
-        <ElSelect
-          v-if="props.currentTool.key === 'shapes'"
-          v-model="option.shapeType"
-          size="small"
-          @change="updateOption"
-          style="margin-left: 8px; width: 80px"
-        >
-          <ElOption label="矩形" value="rectangle" />
-          <ElOption label="圆形" value="circle" />
-          <ElOption label="椭圆" value="ellipse" />
-          <ElOption label="三角形" value="triangle" />
-          <ElOption label="菱形" value="diamond" />
-        </ElSelect>
-        <!-- 形状工具显示填充模式选择 -->
-        <ElSelect
-          v-if="props.currentTool.key === 'shapes'"
-          v-model="option.fillMode"
-          size="small"
-          @change="updateOption"
-          style="margin-left: 8px; width: 80px"
-        >
-          <ElOption label="实心" value="fill" />
-          <ElOption label="线框" value="stroke" />
-        </ElSelect>
+        <!-- 填充工具配置 -->
+        <template v-if="props.currentTool.key === 'fill'">
+          <ElColorPicker
+            v-model="option.color"
+            size="small"
+            color-format="hex"
+            @change="updateOption"
+          />
+          <span class="tolerance-label">容差:</span>
+          <ElSlider
+            v-model="option.tolerance"
+            :min="0"
+            :max="100"
+            size="small"
+            @change="updateOption"
+            style="width: 120px; margin-left: 8px"
+          />
+          <span class="tolerance-value">{{ option.tolerance }}</span>
+        </template>
+        <!-- 其他工具配置 -->
+        <template v-else>
+          <div class="preview">
+            <div
+              class="point"
+              :style="`width:${option.lineWidth}px;height:${option.lineWidth}px;background:${option.color}`"
+            ></div>
+          </div>
+          <ElInputNumber
+            v-model="option.lineWidth"
+            size="small"
+            @change="updateOption"
+            style="margin-right: 8px; width: 80px"
+            controls-position="right"
+            :min="2"
+            :max="props.currentTool.key === 'eraser' ? 40 : 20"
+          />
+          <ElColorPicker
+            v-if="props.currentTool.key !== 'eraser'"
+            v-model="option.color"
+            size="small"
+            color-format="hex"
+            @change="updateOption"
+          />
+          <!-- 形状工具显示形状类型选择 -->
+          <ElSelect
+            v-if="props.currentTool.key === 'shapes'"
+            v-model="option.shapeType"
+            size="small"
+            @change="updateOption"
+            style="margin-left: 8px; width: 80px"
+          >
+            <ElOption label="矩形" value="rectangle" />
+            <ElOption label="圆形" value="circle" />
+            <ElOption label="椭圆" value="ellipse" />
+            <ElOption label="三角形" value="triangle" />
+            <ElOption label="菱形" value="diamond" />
+          </ElSelect>
+          <!-- 形状工具显示填充模式选择 -->
+          <ElSelect
+            v-if="props.currentTool.key === 'shapes'"
+            v-model="option.fillMode"
+            size="small"
+            @change="updateOption"
+            style="margin-left: 8px; width: 80px"
+          >
+            <ElOption label="实心" value="fill" />
+            <ElOption label="线框" value="stroke" />
+          </ElSelect>
+        </template>
       </div>
     </div>
     <div class="tip" style="width: 42px; height: 40px">
@@ -63,7 +85,7 @@
 
 <script lang="ts" setup>
 import type { IAnyObject } from "@/interface/IAnyObject";
-import { ElInputNumber, ElColorPicker, ElSelect, ElOption } from "element-plus";
+import { ElInputNumber, ElColorPicker, ElSelect, ElOption, ElSlider } from "element-plus";
 import { ref } from "vue";
 
 const props = defineProps({
@@ -88,6 +110,7 @@ const option = ref<IAnyObject>({
   color: "#000000",
   fillMode: "fill",
   shapeType: "rectangle",
+  tolerance: 32,
 });
 const showState = ref<boolean>(false);
 const updateOption = () => {
@@ -164,5 +187,16 @@ const changeShowState = (state: boolean) => {
     transform: translate(-50%, -50%);
     border-radius: 50%;
   }
+}
+.tolerance-label {
+  margin-left: 12px;
+  font-size: 14px;
+  color: #666;
+}
+.tolerance-value {
+  margin-left: 8px;
+  font-size: 14px;
+  color: #333;
+  min-width: 24px;
 }
 </style>

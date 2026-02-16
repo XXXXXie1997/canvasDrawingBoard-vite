@@ -205,6 +205,30 @@ const setTool = (toolKey: string) => {
     context.value.fillStyle = options.value.color || "#000";
     context.value.strokeStyle = options.value.color || "#000";
   }
+  // 填充工具：点击即执行，不需要拖动
+  if (toolKey === "fill") {
+    canvas.value.onmousedown = (e: MouseEvent) => {
+      if (e.button !== 0) return;
+      const x = e.clientX - 70;
+      const y = e.clientY - 70;
+      // 边界检查
+      if (x < 0 || x >= canvas.value.width || y < 0 || y >= canvas.value.height) return;
+      // 执行填充
+      tools[toolKey](
+        canvas.value,
+        context.value,
+        x,
+        y,
+        options.value.color || "#000",
+        options.value.tolerance ?? 32
+      );
+      // 保存历史记录
+      saveHistory();
+    };
+    canvas.value.onmousemove = null;
+    canvas.value.onmouseup = null;
+    return;
+  }
   canvas.value.onmousedown = (e: MouseEvent) => {
     if (e.button !== 0) return;
     painting.value = true;

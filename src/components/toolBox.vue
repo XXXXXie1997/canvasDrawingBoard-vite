@@ -42,6 +42,7 @@ const toolList = ref<ITool[]>([
   { icon: "icon-rectangle", key: "shapes", name: "形状", selected: false },
   { icon: "icon-pencil", key: "line", name: "直线", selected: false },
   { icon: "icon-pencil", key: "curve", name: "曲线", selected: false },
+  { icon: "icon-paint-bucket", key: "fill", name: "填充", selected: false },
 ]);
 // 计时器，主要用于组件展开收起操作优化
 let timer = 0;

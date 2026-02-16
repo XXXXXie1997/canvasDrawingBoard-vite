@@ -1,5 +1,92 @@
 import type { IAnyObject } from "@/interface/IAnyObject";
 
+// hex颜色转rgba数组
+const hexToRgba = (hex: string): [number, number, number, number] => {
+  const r = parseInt(hex.slice(1, 3), 16);
+  const g = parseInt(hex.slice(3, 5), 16);
+  const b = parseInt(hex.slice(5, 7), 16);
+  return [r, g, b, 255];
+};
+
+// 颜色匹配（使用容差）
+const colorMatch = (
+  c1: number[],
+  c2: number[],
+  tolerance: number
+): boolean => {
+  return (
+    Math.abs(c1[0] - c2[0]) <= tolerance &&
+    Math.abs(c1[1] - c2[1]) <= tolerance &&
+    Math.abs(c1[2] - c2[2]) <= tolerance
+  );
+};
+
+// 扫描线填充算法
+const floodFill = (
+  imageData: ImageData,
+  startX: number,
+  startY: number,
+  fillColor: [number, number, number, number],
+  tolerance: number
+): void => {
+  const data = imageData.data;
+  const width = imageData.width;
+  const height = imageData.height;
+
+  // 边界检查
+  if (startX < 0 || startX >= width || startY < 0 || startY >= height) return;
+
+  const startIdx = (startY * width + startX) * 4;
+  const startColor = [
+    data[startIdx],
+    data[startIdx + 1],
+    data[startIdx + 2],
+    data[startIdx + 3],
+  ];
+
+  // 如果点击的颜色和填充颜色相同，跳过
+  if (colorMatch(startColor, fillColor, tolerance)) return;
+
+  const visited = new Set<string>();
+  const stack: [number, number][] = [[startX, startY]];
+
+  while (stack.length > 0) {
+    const [x, y] = stack.pop()!;
+    if (x < 0 || x >= width || y < 0 || y >= height) continue;
+
+    const key = `${x},${y}`;
+    if (visited.has(key)) continue;
+
+    const idx = (y * width + x) * 4;
+    const currentColor = [data[idx], data[idx + 1], data[idx + 2], data[idx + 3]];
+
+    if (!colorMatch(currentColor, startColor, tolerance)) continue;
+
+    visited.add(key);
+    data[idx] = fillColor[0];
+    data[idx + 1] = fillColor[1];
+    data[idx + 2] = fillColor[2];
+    data[idx + 3] = fillColor[3];
+
+    stack.push([x + 1, y], [x - 1, y], [x, y + 1], [x, y - 1]);
+  }
+};
+
+// 填充工具入口函数
+const fill = (
+  canvas: HTMLCanvasElement,
+  context: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  color: string,
+  tolerance: number
+): void => {
+  const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
+  const fillColor = hexToRgba(color);
+  floodFill(imageData, Math.floor(x), Math.floor(y), fillColor, tolerance);
+  context.putImageData(imageData, 0, 0);
+};
+
 // 绘制圆点
 const drawCircle = (
   context: CanvasRenderingContext2D,
@@ -226,4 +313,5 @@ export const tools: IAnyObject = {
   shapes: drawShape,
   line: drawLineShape,
   curve: drawCurve,
+  fill: fill,
 };
