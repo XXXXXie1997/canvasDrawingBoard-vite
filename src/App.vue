@@ -88,14 +88,6 @@ const lastPoint = ref<{ x: number; y: number }>({ x: 0, y: 0 });
 let canvasHistory: string[] = [];
 const step = ref(0);
 
-// 曲线工具状态
-const curvePhase = ref<'draw' | 'adjust' | 'done'>('draw');
-const curvePoints = ref<{
-  start: { x: number; y: number };
-  end: { x: number; y: number };
-  control: { x: number; y: number };
-} | null>(null);
-const draggingControlPoint = ref<boolean>(false);
 onKeyStroke(["Ctrl", "Z", "z"], (e) => {
   if (e.ctrlKey && (e.key === "z" || e.key === "Z")) {
     e.preventDefault();
@@ -112,19 +104,6 @@ onKeyStroke(["Ctrl", "S", "s"], (e) => {
   if (e.ctrlKey && (e.key === "s" || e.key === "S")) {
     e.preventDefault();
     savePicture();
-  }
-});
-// 曲线工具：Enter确认，Esc取消
-onKeyStroke("Enter", (e) => {
-  if (currentTool.value.key === "curve" && curvePhase.value === 'adjust') {
-    e.preventDefault();
-    confirmCurve();
-  }
-});
-onKeyStroke("Escape", (e) => {
-  if (currentTool.value.key === "curve" && curvePhase.value === 'adjust') {
-    e.preventDefault();
-    cancelCurve();
   }
 });
 
@@ -220,11 +199,6 @@ const cleanBoard = () => {
   saveHistory();
 };
 const setTool = (toolKey: string) => {
-  // 切换工具时，如果正在调整曲线，先确认
-  if (curvePhase.value === 'adjust') {
-    confirmCurve();
-  }
-  
   if (toolKey === "eraser") {
     context.value.fillStyle = defaultBoardColor;
     context.value.strokeStyle = defaultBoardColor;
@@ -255,130 +229,6 @@ const setTool = (toolKey: string) => {
     canvas.value.onmousemove = null;
     canvas.value.onmouseup = null;
     return;
-  }
-  // 曲线工具特殊处理：两阶段交互
-  if (toolKey === "curve") {
-    // 重置曲线状态
-    curvePhase.value = 'draw';
-    curvePoints.value = null;
-    draggingControlPoint.value = false;
-
-    canvas.value.onmousedown = (e: MouseEvent) => {
-      if (e.button !== 0) return;
-      
-      const x = e.clientX - 70;
-      const y = e.clientY - 70;
-      
-      // 阶段2：拖动控制点
-      if (curvePhase.value === 'adjust' && curvePoints.value) {
-        const distToControl = Math.sqrt(
-          Math.pow(x - curvePoints.value.control.x, 2) +
-          Math.pow(y - curvePoints.value.control.y, 2)
-        );
-        // 如果点击控制点（半径10px内）
-        if (distToControl <= 10) {
-          draggingControlPoint.value = true;
-          return;
-        }
-      }
-      
-      // 阶段1：绘制新曲线
-      painting.value = true;
-      lastPoint.value = { x: e.clientX, y: e.clientY };
-      cache.value.width = canvas.value.width;
-      cache.value.height = canvas.value.height;
-      cacheContext.value = cache.value.getContext("2d");
-      cacheContext.value?.drawImage(canvas.value, 0, 0);
-    };
-    
-    canvas.value.onmousemove = (e: MouseEvent) => {
-      if (e.button !== 0) return;
-      const x = e.clientX - 70;
-      const y = e.clientY - 70;
-      
-      // 阶段2：拖动控制点
-      if (draggingControlPoint.value && curvePoints.value) {
-        curvePoints.value.control.x = x;
-        curvePoints.value.control.y = y;
-        
-        // 重绘曲线和控制点
-        context.value?.clearRect(0, 0, canvas.value.width, canvas.value.height);
-        context.value?.drawImage(cache.value, 0, 0);
-        tools.curve(
-          context.value,
-          curvePoints.value.start.x,
-          curvePoints.value.start.y,
-          curvePoints.value.end.x,
-          curvePoints.value.end.y,
-          curvePoints.value.control.x,
-          curvePoints.value.control.y
-        );
-        // 绘制控制点标识
-        drawControlPoint(context.value, curvePoints.value.control.x, curvePoints.value.control.y);
-        return;
-      }
-      
-      // 阶段1：预览曲线
-      if (painting.value === true) {
-        const x1 = lastPoint.value.x - 70;
-        const y1 = lastPoint.value.y - 70;
-        const x2 = x;
-        const y2 = y;
-        
-        // 默认控制点在中点位置，向上偏移一段距离
-        const midX = (x1 + x2) / 2;
-        const midY = (y1 + y2) / 2;
-        const distance = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
-        const cpx = midX;
-        const cpy = midY - distance / 4;
-        
-        context.value?.clearRect(0, 0, canvas.value.width, canvas.value.height);
-        context.value?.drawImage(cache.value, 0, 0);
-        tools.curve(context.value, x1, y1, x2, y2, cpx, cpy);
-      }
-    };
-    
-    canvas.value.onmouseup = (e: MouseEvent) => {
-      if (e.button !== 0) return;
-      
-      // 控制点拖动结束
-      if (draggingControlPoint.value) {
-        draggingControlPoint.value = false;
-        return;
-      }
-      
-      // 阶段1完成：进入阶段2
-      if (painting.value === true) {
-        painting.value = false;
-        const x1 = lastPoint.value.x - 70;
-        const y1 = lastPoint.value.y - 70;
-        const x2 = e.clientX - 70;
-        const y2 = e.clientY - 70;
-        
-        const midX = (x1 + x2) / 2;
-        const midY = (y1 + y2) / 2;
-        const distance = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
-        
-        curvePoints.value = {
-          start: { x: x1, y: y1 },
-          end: { x: x2, y: y2 },
-          control: { x: midX, y: midY - distance / 4 }
-        };
-        curvePhase.value = 'adjust';
-        
-        // 绘制控制点标识
-        drawControlPoint(context.value, curvePoints.value.control.x, curvePoints.value.control.y);
-      }
-    };
-    
-    // 双击确认曲线
-    canvas.value.ondblclick = (e: MouseEvent) => {
-      if (curvePhase.value === 'adjust') {
-        confirmCurve();
-      }
-    };
-    
-    return; // 曲线工具单独处理，不执行后续逻辑
   }
 
   canvas.value.onmousedown = (e: MouseEvent) => {
@@ -452,51 +302,6 @@ watch(
   }
 );
 
-// 绘制控制点辅助函数
-const drawControlPoint = (ctx: CanvasRenderingContext2D | IAnyObject, x: number, y: number) => {
-  ctx.save();
-  ctx.strokeStyle = "#0066ff";
-  ctx.fillStyle = "#ffffff";
-  ctx.lineWidth = 2;
-  ctx.beginPath();
-  ctx.arc(x, y, 6, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.stroke();
-  ctx.restore();
-};
-
-// 曲线确认（Enter）
-const confirmCurve = () => {
-  if (curvePhase.value === 'adjust' && curvePoints.value) {
-    // 清除控制点标识并重绘曲线
-    context.value?.clearRect(0, 0, canvas.value.width, canvas.value.height);
-    context.value?.drawImage(cache.value, 0, 0);
-    tools.curve(
-      context.value,
-      curvePoints.value.start.x,
-      curvePoints.value.start.y,
-      curvePoints.value.end.x,
-      curvePoints.value.end.y,
-      curvePoints.value.control.x,
-      curvePoints.value.control.y
-    );
-    saveHistory();
-    curvePhase.value = 'done';
-    curvePoints.value = null;
-  }
-};
-
-// 曲线取消（Esc）
-const cancelCurve = () => {
-  if (curvePhase.value === 'adjust') {
-    // 恢复到绘制前的状态
-    context.value?.clearRect(0, 0, canvas.value.width, canvas.value.height);
-    context.value?.drawImage(cache.value, 0, 0);
-    curvePhase.value = 'draw';
-    curvePoints.value = null;
-    draggingControlPoint.value = false;
-  }
-};
 const setSize = () => {
   canvas.value.width = canvasWrapper.value.clientWidth;
   canvas.value.height = canvasWrapper.value.clientHeight;
