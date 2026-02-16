@@ -60,7 +60,6 @@
             <ElOption label="矩形" value="rectangle" />
             <ElOption label="圆形" value="circle" />
             <ElOption label="椭圆" value="ellipse" />
-            <ElOption label="三角形" value="triangle" />
             <ElOption label="菱形" value="diamond" />
           </ElSelect>
           <!-- 形状工具显示填充模式选择 -->

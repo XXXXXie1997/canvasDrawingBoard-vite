@@ -3,5 +3,5 @@ export interface ITool {
   key: string;
   icon?: any;
   selected?: boolean;
-  shapeType?: 'rectangle' | 'circle' | 'ellipse' | 'triangle' | 'diamond';
+  shapeType?: 'rectangle' | 'circle' | 'ellipse' | 'diamond';
 }

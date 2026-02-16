@@ -184,35 +184,6 @@ const drawEllipse = (
   context.closePath();
 };
 
-// 绘制等边三角形（以拖动框为中心区域）
-const drawTriangle = (
-  context: CanvasRenderingContext2D,
-  x1: number,
-  y1: number,
-  x2: number,
-  y2: number,
-  fillMode: string = "fill"
-) => {
-  const centerX = (x1 + x2) / 2;
-  const topY = Math.min(y1, y2);
-  const bottomY = Math.max(y1, y2);
-  const leftX = Math.min(x1, x2);
-  const rightX = Math.max(x1, x2);
-  
-  // 等边三角形三个顶点：顶点在上边中点，左下和右下在底部
-  context.beginPath();
-  context.moveTo(centerX, topY);
-  context.lineTo(leftX, bottomY);
-  context.lineTo(rightX, bottomY);
-  context.closePath();
-  
-  if (fillMode === "fill") {
-    context.fill();
-  } else {
-    context.stroke();
-  }
-};
-
 // 绘制菱形（以拖动框为中心，四个顶点）
 const drawDiamond = (
   context: CanvasRenderingContext2D,
@@ -263,9 +234,6 @@ const drawShape = (
       break;
     case "ellipse":
       drawEllipse(context, x1, y1, x2, y2, fillMode);
-      break;
-    case "triangle":
-      drawTriangle(context, x1, y1, x2, y2, fillMode);
       break;
     case "diamond":
       drawDiamond(context, x1, y1, x2, y2, fillMode);
