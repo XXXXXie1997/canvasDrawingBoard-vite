@@ -188,8 +188,42 @@ const drawShape = (
   }
 };
 
+// 绘制直线（用于直线工具，支持预览）
+const drawLineShape = (
+  context: CanvasRenderingContext2D,
+  x1: number,
+  y1: number,
+  x2: number,
+  y2: number
+) => {
+  context.beginPath();
+  context.moveTo(x1, y1);
+  context.lineTo(x2, y2);
+  context.stroke();
+  context.closePath();
+};
+
+// 绘制二次贝塞尔曲线
+const drawCurve = (
+  context: CanvasRenderingContext2D,
+  x1: number,
+  y1: number,
+  x2: number,
+  y2: number,
+  cpx: number,
+  cpy: number
+) => {
+  context.beginPath();
+  context.moveTo(x1, y1);
+  context.quadraticCurveTo(cpx, cpy, x2, y2);
+  context.stroke();
+  context.closePath();
+};
+
 export const tools: IAnyObject = {
   pencil: draw,
   eraser: draw,
   shapes: drawShape,
+  line: drawLineShape,
+  curve: drawCurve,
 };

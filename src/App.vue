@@ -209,8 +209,8 @@ const setTool = (toolKey: string) => {
     if (e.button !== 0) return;
     painting.value = true;
     lastPoint.value = { x: e.clientX, y: e.clientY };
-    // 形状工具需要保存当前画布状态用于预览
-    if (toolKey === "shapes") {
+    // 形状工具、直线工具、曲线工具需要保存当前画布状态用于预览
+    if (toolKey === "shapes" || toolKey === "line" || toolKey === "curve") {
       cache.value.width = canvas.value.width;
       cache.value.height = canvas.value.height;
       cacheContext.value = cache.value.getContext("2d");
@@ -232,6 +232,43 @@ const setTool = (toolKey: string) => {
           e.clientY - 70,
           options.value.shapeType || "rectangle",
           options.value.fillMode || "fill"
+        );
+      } else if (toolKey === "line") {
+        // 直线工具：使用缓存画布预览
+        context.value?.clearRect(0, 0, canvas.value.width, canvas.value.height);
+        context.value?.drawImage(cache.value, 0, 0);
+        tools[toolKey](
+          context.value,
+          lastPoint.value.x - 70,
+          lastPoint.value.y - 70,
+          e.clientX - 70,
+          e.clientY - 70
+        );
+      } else if (toolKey === "curve") {
+        // 曲线工具：使用缓存画布预览
+        // 控制点为起点终点连线中点向上偏移
+        const x1 = lastPoint.value.x - 70;
+        const y1 = lastPoint.value.y - 70;
+        const x2 = e.clientX - 70;
+        const y2 = e.clientY - 70;
+        // 默认控制点在中点位置，向上偏移一段距离
+        const midX = (x1 + x2) / 2;
+        const midY = (y1 + y2) / 2;
+        // 向上偏移距离为起点终点距离的1/4
+        const distance = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
+        const cpx = midX;
+        const cpy = midY - distance / 4;
+        
+        context.value?.clearRect(0, 0, canvas.value.width, canvas.value.height);
+        context.value?.drawImage(cache.value, 0, 0);
+        tools[toolKey](
+          context.value,
+          x1,
+          y1,
+          x2,
+          y2,
+          cpx,
+          cpy
         );
       } else {
         // 其他工具：正常绘制
